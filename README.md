@@ -1,5 +1,7 @@
 # Mindforge Client
 
+[mindforge.ai](https://mindforge.ai)
+
 This is a Python client for interacting with the Mindforge API. It provides a simple interface to connect to the Mindforge server, send messages, and receive various types of events.
 
 ## Installation
