@@ -4,11 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mindforge"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
   { name="William Eliot", email="william@mindforge.ai" },
 ]
-description = "A small example package"
+description = "Python client for mindforge.ai."
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
