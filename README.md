@@ -12,7 +12,7 @@ To install the Mindforge client, use pip:
 pip install mindforge
 ```
 
-### Server-side Usage
+## Server-side Usage
 
 Create a `MindforgeServerClient`:
 
@@ -20,14 +20,14 @@ Create a `MindforgeServerClient`:
 from mindforge import MindforgeServerClient
 
 client = MindforgeServerClient(
-base_url="https://api.mindforge.ai", # Optional
-api_key="your-api-key"
+  base_url="https://api.mindforge.ai", # Optional
+  api_key="your-api-key"
 )
 ```
 
 To use this client, you'll need a Mindforge API key. You can create keys in the dashboard.
 
-#### Performing NPC interactions
+### Performing NPC interactions
 
 To trigger an NPC interaction:
 
@@ -36,22 +36,22 @@ from mindforge.messages import NPCText, NPCClientFunctionFire
 
 npc_id = "your-npc-id" # get from dashboard
 history = [
-{"role": "player", "content": "Hello, NPC!"},
-{"role": "npc", "content": "Greetings! How can I assist you today?"},
+  {"role": "player", "content": "Hello, NPC!"},
+  {"role": "npc", "content": "Greetings! How can I assist you today?"},
 ]
 
 try:
-result = await client.perform.trigger(npc_id, history)
-for message in result:
-if isinstance(message, NPCText):
-print("NPC Text:", message.content)
-elif isinstance(message, NPCClientFunctionFire):
-print("NPC Function:", message.name, message.args)
+  result = await client.perform.trigger(npc_id, history)
+  for message in result:
+    if isinstance(message, NPCText):
+      print("NPC Text:", message.content)
+    elif isinstance(message, NPCClientFunctionFire):
+      print("NPC Function:", message.name, message.args)
 except ValueError as error:
-print("Error performing NPC interaction:", error)
+  print("Error performing NPC interaction:", error)
 ```
 
-### Browser-side Usage
+## Browser-side Usage
 
 Create a `MindforgeBrowserClient`:
 
@@ -61,7 +61,7 @@ from mindforge import MindforgeBrowserClient, MindforgeNPCMessageType
 client = MindforgeBrowserClient()
 ```
 
-#### Joining a session
+### Joining a session
 
 To join a live session:
 
@@ -69,35 +69,35 @@ To join a live session:
 token = "your-session-token" # `get_mindforge_session_token from token.py`
 
 try:
-await client.join_session(token)
-print("Joined session successfully")
+  await client.join_session(token)
+  print("Joined session successfully")
 except ValueError as error:
-print("Error joining session:", error)
+  print("Error joining session:", error)
 ```
 
-#### Receiving messages
+### Receiving messages
 
 You can listen for various events emitted by the client:
 
 ```python
 @client.on(MindforgeNPCMessageType.Text)
 def handle_text(message):
-print("Received NPC text:", message.content)
+  print("Received NPC text:", message.content)
 
 @client.on(MindforgeNPCMessageType.InputAudioTranscript)
 def handle_input_transcript(message):
-print("Received input audio transcript:", message.content)
+  print("Received input audio transcript:", message.content)
 
 @client.on(MindforgeNPCMessageType.OutputAudioTranscript)
 def handle_output_transcript(message):
-print("Received output audio transcript:", message.content)
+  print("Received output audio transcript:", message.content)
 
 @client.on(MindforgeNPCMessageType.ClientFunctionFire)
 def handle_client_function(message):
-print("NPC triggered client function:", message.name, message.args)
+  print("NPC triggered client function:", message.name, message.args)
 ```
 
-#### Disconnecting
+### Disconnecting
 
 To disconnect from the session:
 
