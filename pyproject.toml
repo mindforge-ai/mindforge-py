@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mindforge"
-version = "1.0.3"
+version = "1.0.4"
 authors = [
   { name="William Eliot", email="william@mindforge.ai" },
 ]
@@ -18,7 +18,8 @@ classifiers = [
 ]
 dependencies = [
   "weboscket-client>=1.8.0",
-  "events>=0.5"
+  "events>=0.5",
+  "livekit>=0.17.5"
 ]
 
 [project.urls]
