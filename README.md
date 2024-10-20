@@ -1,8 +1,8 @@
-# Mindforge Client
+# `mindforge-py`
 
 [mindforge.ai](https://mindforge.ai)
 
-This is a Python client for interacting with the Mindforge API. It provides a simple interface to connect to the Mindforge server, send messages, and receive various types of events.
+This package contains Python clients and utilities for interacting with the Mindforge API. Specifically, there's a `MindforgeServerClient` for interactions with our REST API (e.g. creating an NPC, deleting a capability), and a `MindforgeBrowserClient` for joining live sessions in your client-side code.
 
 ## Installation
 
@@ -12,89 +12,94 @@ To install the Mindforge client, use pip:
 pip install mindforge
 ```
 
-## Usage
+### Server-side Usage
 
-Create a MindforgeClient:
+Create a `MindforgeServerClient`:
 
 ```python
-from mindforge import MindforgeClient, MindforgeServerEventType
+from mindforge import MindforgeServerClient
 
-api_key = "your-api-key"
-client = MindforgeClient(api_key)
+client = MindforgeServerClient(
+base_url="https://api.mindforge.ai", # Optional
+api_key="your-api-key"
+)
 ```
 
 To use this client, you'll need a Mindforge API key. You can create keys in the dashboard.
 
-### Open a websocket connection
+#### Performing NPC interactions
 
-To connect to the Mindforge server:
-
-```python
-character_id = "your-character-id"
-conversation_id = "optional-conversation-id"
-client.connect(character_id, conversation_id)
-```
-
-### Sending messages and audio data
-
-To send a text message to the server:
+To trigger an NPC interaction:
 
 ```python
-client.send_message("Hello, Mindforge!")
+from mindforge.messages import NPCText, NPCClientFunctionFire
+
+npc_id = "your-npc-id" # get from dashboard
+history = [
+{"role": "player", "content": "Hello, NPC!"},
+{"role": "npc", "content": "Greetings! How can I assist you today?"},
+]
+
+try:
+result = await client.perform.trigger(npc_id, history)
+for message in result:
+if isinstance(message, NPCText):
+print("NPC Text:", message.content)
+elif isinstance(message, NPCClientFunctionFire):
+print("NPC Function:", message.name, message.args)
+except ValueError as error:
+print("Error performing NPC interaction:", error)
 ```
 
-To send audio data to the server:
+### Browser-side Usage
+
+Create a `MindforgeBrowserClient`:
 
 ```python
-client.send_audio_data("base64-encoded-audio-data")
+from mindforge import MindforgeBrowserClient, MindforgeNPCMessageType
+
+client = MindforgeBrowserClient()
 ```
 
-### Receiving data
+#### Joining a session
+
+To join a live session:
+
+```python
+token = "your-session-token" # `get_mindforge_session_token from token.py`
+
+try:
+await client.join_session(token)
+print("Joined session successfully")
+except ValueError as error:
+print("Error joining session:", error)
+```
+
+#### Receiving messages
 
 You can listen for various events emitted by the client:
 
 ```python
-def on_npc_message(content):
-  print("Received NPC message:", content)
+@client.on(MindforgeNPCMessageType.Text)
+def handle_text(message):
+print("Received NPC text:", message.content)
 
-def on_npc_action(content):
-  print("Received NPC action:", content)
+@client.on(MindforgeNPCMessageType.InputAudioTranscript)
+def handle_input_transcript(message):
+print("Received input audio transcript:", message.content)
 
-def on_npc_live_message_chunk(content):
-  print("Received NPC live message chunk:", content)
+@client.on(MindforgeNPCMessageType.OutputAudioTranscript)
+def handle_output_transcript(message):
+print("Received output audio transcript:", message.content)
 
-def on_npc_live_message(content):
-  print("Received complete NPC live message:", content)
-
-def on_npc_audio_data(content):
-  print("Received NPC audio data:", content)
-
-def on_player_transcribed_message_chunk(content):
-  print("Received player transcribed message chunk:", content)
-
-def on_player_transcribed_message(content):
-  print("Received complete player transcribed message:", content)
-
-def on_server_error(content):
-  print("Server error:", content)
-
-def on_close():
-  print("Connection closed")
-
-client.on(MindforgeServerEventType.NPCMessage, on_npc_message)
-client.on(MindforgeServerEventType.NPCAction, on_npc_action)
-client.on(MindforgeServerEventType.NPCLiveMessageChunk, on_npc_live_message_chunk)
-client.on(MindforgeServerEventType.NPCLiveMessage, on_npc_live_message)
-client.on(MindforgeServerEventType.NPCAudioData, on_npc_audio_data)
-client.on(MindforgeServerEventType.PlayerTranscribedMessageChunk, on_player_transcribed_message_chunk)
-client.on(MindforgeServerEventType.PlayerTranscribedMessage, on_player_transcribed_message)
-client.on(MindforgeServerEventType.ServerError, on_server_error)
-client.on(MindforgeServerEventType.Close, on_close)
+@client.on(MindforgeNPCMessageType.ClientFunctionFire)
+def handle_client_function(message):
+print("NPC triggered client function:", message.name, message.args)
 ```
 
-### Disconnecting
+#### Disconnecting
 
-To disconnect from the server:
+To disconnect from the session:
 
 ```python
 client.disconnect()
@@ -106,29 +111,19 @@ The client uses the following event types:
 
 ### Server Event Types
 
-`NPCMessage`: Received when the NPC sends a complete message.
-
-`NPCAction`: Received when the NPC performs an action.
-
-`NPCLiveMessageChunk`: Received when a chunk of the NPC's live message is available.
-
-`NPCLiveMessage`: Received when the NPC's complete live message is available.
-
-`NPCAudioData`: Received when audio data from the NPC is available.
-
-`PlayerTranscribedMessageChunk`: Received when a chunk of the player's transcribed message is available.
-
-`PlayerTranscribedMessage`: Received when the player's complete transcribed message is available.
-
-`ServerError`: Received when an error occurs on the server.
-
-`Close`: Received when the WebSocket connection is closed.
+| Event Type                 | Description                                             |
+| -------------------------- | ------------------------------------------------------- |
+| `NPCText`                  | Received when the NPC sends a text message.             |
+| `NPCInputAudioTranscript`  | Received when the input audio transcript is available.  |
+| `NPCOutputAudioTranscript` | Received when the output audio transcript is available. |
+| `NPCClientFunctionFire`    | Received when the NPC triggers a client-side function.  |
 
 ### Client Event Types
 
-`PlayerMessage`: Used to send a text message from the player to the server.
-
-`PlayerAudioData`: Used to send audio data from the player to the server.
+| Event Type                | Description                                                |
+| ------------------------- | ---------------------------------------------------------- |
+| `PlayerText`              | Used to send a text message from the player to the server. |
+| `PlayerTriggerNPCMessage` | Used to trigger an NPC message from the player.            |
 
 ## Support
 
